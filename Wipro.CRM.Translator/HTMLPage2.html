@@ -1,0 +1,277 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+/*
+Author: Baktha
+Date: 01-15-2018
+Filename: CustomerNotification_Ribbon.js
+*/
+var FORM_TYPE_CREATE = 1
+    , FORM_TYPE_UPDATE = 2
+    , FORM_TYPE_READ_ONLY = 3
+    , FORM_TYPE_DISABLED = 4
+    , FORM_TYPE_QUICK_CREATE = 5
+    , FORM_TYPE_BULK_EDIT = 6
+    , CRM_FORM_SAVE_MODE_SAVE = 1
+    , CRM_FORM_SAVE_MODE_SAVEANDCLOSE = 2
+    , CRM_FORM_SAVE_MODE_SAVEANDNEW = 59
+    , CRM_FORM_VALID = true
+    , CRM_FORM_FORCE_SAVE = false
+, Selected_Items = null;
+
+HP = window.HP || { __namespace: true, __typeName: "HP" };
+HP.ESSC = HP.ESSC || { __namespace: true, __typeName: "HP.ESSC" };
+HP.ESSC.CustomerNotification = HP.ESSC.CustomerNotification || { __namespace: true, __typeName: "HP.ESSC.CustomerNotification" };
+HP.ESSC.CustomerNotification.Ribbon = HP.ESSC.CustomerNotification.Ribbon || ({
+    notificationType: { error: "ERROR", warning: "WARNING", information: "INFORMATION" },
+    defaults: function () {
+        var defaults = new Object();
+        defaults.selectedItems = null;
+        return defaults;
+    },
+    onLoad: function () {
+    },
+    onSave: function (executionObj) {
+
+    },
+    _loadUI: function () {
+    },
+    _displayNotification: function (message, notificationType) {
+        var notificationId = HP.ESSC.CustomerNotification.Ribbon._getNotificationIdByType(notificationType);
+
+        if (HP.ESSC.CustomerNotification.Ribbon._formNotificationValid() && typeof Xrm.Page.ui.setFormNotification == 'function')
+            Xrm.Page.ui.setFormNotification(message, notificationType, notificationId);
+        else if (typeof Xrm.Utility != 'undefined' && typeof Xrm.Utility.alertDialog != 'undefined')
+            Xrm.Utility.alertDialog(message);
+        else alert(message);
+    },
+    _getNotificationIdByType: function (notificationType) {
+        var notificationTypeId = "0";
+        switch (notificationType) {
+            case HP.ESSC.CustomerNotification.Ribbon.notificationType.information:
+                notificationTypeId = "1"
+                break;
+            case HP.ESSC.CustomerNotification.Ribbon.notificationType.warning:
+                notificationTypeId = "2"
+                break;
+            case HP.ESSC.CustomerNotification.Ribbon.notificationType.error:
+                notificationTypeId = "3"
+                break;
+        }
+
+        return notificationTypeId;
+    },
+    _clearAllNotification: function () {
+        HP.ESSC.CustomerNotification.Ribbon._clearNotification(HP.ESSC.CustomerNotification.Ribbon.notificationType.error);
+        HP.ESSC.CustomerNotification.Ribbon._clearNotification(HP.ESSC.CustomerNotification.Ribbon.notificationType.warning);
+        HP.ESSC.CustomerNotification.Ribbon._clearNotification(HP.ESSC.CustomerNotification.Ribbon.notificationType.information);
+    },
+    _clearNotification: function (notificationType) {
+        if (typeof notificationType != 'undefined' && notificationType) {
+            var notificationId = HP.ESSC.CustomerNotification.Ribbon._getNotificationIdByType(notificationType);
+            if (HP.ESSC.CustomerNotification.Ribbon._formNotificationValid() && typeof Xrm.Page.ui.clearFormNotification == 'function')
+                Xrm.Page.ui.clearFormNotification(notificationId);
+        }
+    },
+    _formNotificationValid: function () {
+        return (typeof Xrm != 'undefined'
+                && typeof Xrm.Page != 'undefined'
+                && typeof Xrm.Page.ui != 'undefined'
+                && (Xrm.Page.ui));
+    },
+    _displayAlertDialog: function (text, confirmButtonLabel, closeCallback, dialogOptions) {
+        if (typeof Xrm.Dialog != 'undefined') {
+            var alertDialogStrings = null;
+
+            if (typeof dialogOptions == 'undefined' && typeof Xrm.DialogOptions != 'undefined') dialogOptions = new Xrm.DialogOptions;
+            if (typeof text == 'undefined' || !text) text = "Action needed";
+
+            if (typeof Xrm.AlertDialogStrings != 'undefined') {
+                alertDialogStrings = new Xrm.AlertDialogStrings();
+                alertDialogStrings.text = text;
+                alertDialogStrings.confirmButtonLabel = confirmButtonLabel;
+            } else alertDialogStrings = { "text": text, "confirmButtonLabel": confirmButtonLabel };
+
+            Xrm.Dialog.openAlertDialog(alertDialogStrings, dialogOptions, function () {
+                if (closeCallback) closeCallback();
+            });
+        } else {
+            if (typeof Xrm.Utility != 'undefined' && typeof Xrm.Utility.alertDialog != 'undefined') {
+                Xrm.Utility.alertDialog(text, function () {
+                    if (closeCallback) closeCallback();
+                });
+            } else alert(text);
+        }
+    },
+    _displayConfirmDialog: function (title, subTitle, confirmButtonLabel, cancelButtonLabel, confirmCallback, cancelCallback, dialogOptions) {
+        if (typeof Xrm.Dialog != 'undefined') {
+            var confirmDialogStrings = null
+                , text = "";
+
+            if (typeof dialogOptions == 'undefined' && typeof Xrm.DialogOptions != 'undefined') dialogOptions = new Xrm.DialogOptions;
+            if (typeof Xrm.ConfirmDialogStrings != 'undefined') {
+
+                confirmDialogStrings = new Xrm.ConfirmDialogStrings();
+                confirmDialogStrings.text = text;
+                confirmDialogStrings.title = title;
+                confirmDialogStrings.subtitle = subTitle;
+                confirmDialogStrings.confirmButtonLabel = confirmButtonLabel;
+                confirmDialogStrings.cancelButtonLabel = cancelButtonLabel;
+
+            } else confirmDialogStrings = { "text": text, "title": title, "subtitle": subTitle, "confirmButtonLabel": confirmButtonLabel, "cancelButtonLabel": cancelButtonLabel };
+
+            Xrm.Dialog.openConfirmDialog(confirmDialogStrings
+                , dialogOptions
+                , function () {
+                    if (confirmCallback) confirmCallback();
+                }
+                , function () {
+                    if (cancelCallback) cancelCallback();
+                });
+        } else {
+            if (typeof Xrm.Utility != 'undefined' && typeof Xrm.Utility.confirmDialog != 'undefined')
+                Xrm.Utility.confirmDialog(subTitle
+                                        , function () {
+                                            if (confirmCallback) confirmCallback();
+                                        }
+                                        , function () {
+                                            if (cancelCallback) cancelCallback();
+                                        });
+            else {
+                var confirm = window.confirm(subTitle);
+                if (confirm) {
+                    if (confirmCallback) confirmCallback();
+                } else {
+                    if (cancelCallback) cancelCallback();
+                }
+            }
+        }
+    },
+    _sendCustomerNotification: function () {
+        var isDirty = Xrm.Page.data.entity.getIsDirty();
+        if (isDirty) { Xrm.Page.data.entity.save(); }
+        HP.ESSC.CustomerNotification.Ribbon._displayConfirmDialog("Confirmation", "Do you wish to send Customer Notification?", "Ok", "Cancel", HP.ESSC.CustomerNotification.Ribbon._confirmCallback, HP.ESSC.CustomerNotification.Ribbon._cancelCallback, null);
+    },
+    _confirmCallback: function () {
+        HP.ESSC.CustomerNotification.Ribbon._clearAllNotification();
+        var id = Xrm.Page.data.entity.getId();
+        id = id.replace('{', '').replace('}', '');
+        var req = new XMLHttpRequest();
+        req.open("POST", Xrm.Page.context.getClientUrl() + "/api/data/v8.0/essc_customernotifications(" + id + ")/Microsoft.Dynamics.CRM.essc_SendCustomerNotification", false);
+        req.setRequestHeader("OData-MaxVersion", "4.0");
+        req.setRequestHeader("OData-Version", "4.0");
+        req.setRequestHeader("Accept", "application/json");
+        req.setRequestHeader("Content-Type", "application/json; charset=utf-8");
+        req.setRequestHeader("Prefer", "odata.include-annotations=\"OData.Community.Display.V1.FormattedValue\"");
+        req.onreadystatechange = function () {
+            if (this.readyState === 4) {
+                req.onreadystatechange = null;
+                if (this.status === 200 || this.status == 204) {
+                    var result = JSON.parse(this.response);
+
+                    //added empty string validation
+                    if (HP.ESSC.CustomerNotification.Ribbon._validateField(result) && HP.ESSC.CustomerNotification.Ribbon._validateField(result.ExecutionResponse)) {
+
+                        var executionRespone = JSON.parse(result.ExecutionResponse);
+
+                        if (HP.ESSC.CustomerNotification.Ribbon._validateField(executionRespone) && HP.ESSC.CustomerNotification.Ribbon._validateField(executionRespone.ReturnMessage) &&
+                            executionRespone.ReturnMessage.ReturnCode != null && executionRespone.ReturnMessage.ReturnCode == 0) {
+
+                            HP.ESSC.CustomerNotification.Ribbon._displayNotification("Successfully sent customer notification", HP.ESSC.CustomerNotification.Ribbon.notificationType.information);
+                        }
+                        else {
+                            HP.ESSC.CustomerNotification.Ribbon._displayNotification(executionRespone.ReturnMessage.Message, HP.ESSC.CustomerNotification.Ribbon.notificationType.error);
+                        }
+                    }
+                    else {
+                        HP.ESSC.CustomerNotification.Ribbon._displayNotification("Unable to send customer notification", HP.ESSC.CustomerNotification.Ribbon.notificationType.error);
+                    }
+                    //refresh page
+                    HP.ESSC.CustomerNotification.Ribbon._refreshData();
+                }
+                else {
+                    var errorResult = JSON.parse(this.response);
+                    if (HP.ESSC.CustomerNotification.Ribbon._validateField(errorResult) && HP.ESSC.CustomerNotification.Ribbon._validateField(errorResult.error) &&
+                        HP.ESSC.CustomerNotification.Ribbon._validateField(errorResult.error.message)) {
+                        HP.ESSC.CustomerNotification.Ribbon._displayNotification(errorResult.error.message, HP.ESSC.CustomerNotification.Ribbon.notificationType.error);
+
+                    } else { HP.ESSC.CustomerNotification.Ribbon._displayNotification("Unable to send customer notification", HP.ESSC.CustomerNotification.Ribbon.notificationType.error); }
+                    HP.ESSC.CustomerNotification.Ribbon._refreshData();
+
+                }
+            }
+        };
+        req.send();
+    },
+    _cancelCallback: function () { },
+    _bulkCustomerNotification: function (selectedItems) {
+        HP.ESSC.CustomerNotification.Selected_Items = selectedItems;
+        HP.ESSC.CustomerNotification.Ribbon._displayConfirmDialog("Confirmation", "Do you wish to send items to Customer Notification?", "Ok", "Cancel", HP.ESSC.CustomerNotification.Ribbon._bulkConfirmCallback, HP.ESSC.CustomerNotification.Ribbon._bulkCancelCallback, null);
+    },
+    _bulkConfirmCallback: function () {
+        var selectedItems = HP.ESSC.CustomerNotification.Selected_Items,
+          items = [];
+
+        for (var i = 0; i < selectedItems.length; i++) {
+            var id = selectedItems[i].Id;
+            id = id.replace('{', '').replace('}', '');
+            items.push({
+                "@odata.type": "Microsoft.Dynamics.CRM.essc_customernotification",//entity type
+                "essc_customernotificationid": id,//Record's guid
+            });
+        }
+
+        var parameters = {
+            "CustomerNotificationIds": items
+        };
+        var req = new XMLHttpRequest();
+        req.open("POST", Xrm.Page.context.getClientUrl() + "/api/data/v8.0/essc_SendCustomerNotifications", false);
+        req.setRequestHeader("OData-MaxVersion", "4.0");
+        req.setRequestHeader("OData-Version", "4.0");
+        req.setRequestHeader("Accept", "application/json");
+        req.setRequestHeader("Content-Type", "application/json; charset=utf-8");
+        req.setRequestHeader("Prefer", "odata.include-annotations=\"OData.Community.Display.V1.FormattedValue\"");
+        req.onreadystatechange = function () {
+            if (this.readyState === 4) {
+                req.onreadystatechange = null;
+                if (this.status === 200 || this.status == 204) {
+                    HP.ESSC.CustomerNotification.Ribbon._displayNotification("Successfully Sent to Customer Notification", HP.ESSC.CustomerNotification.Ribbon.notificationType.information);
+                }
+                else {
+                    HP.ESSC.CustomerNotification.Ribbon._displayNotification("Unsuccessfull while sent to Customer Notification", HP.ESSC.CustomerNotification.Ribbon.notificationType.error);
+                }
+            }
+        };
+        req.send(JSON.stringify(parameters));
+
+    },
+    _bulkCancelCallback: function () { },
+    _refreshData: function () {
+        setTimeout(function () { Xrm.Utility.openEntityForm("essc_customernotification", Xrm.Page.data.entity.getId()); }, 4000);
+    },
+    _validateField: function (fieldName) {
+        try {
+            if (fieldName != null && fieldName != undefined && fieldName != "")
+                return true;
+            else
+                return false;
+        } catch (e) {
+            return false;
+        }
+    },
+    __namespace: true,
+    __typeName: "HP.ESSC.CustomerNotification.Ribbon"
+});
+if (!String.prototype.format) {
+    String.prototype.format = function () {
+        var args = arguments;
+        return this.replace(/{(\d+)}/g, function (match, number) {
+            return typeof args[number] != 'undefined'
+			  ? args[number]
+			  : match
+            ;
+        });
+    };
+}
+
+</html>

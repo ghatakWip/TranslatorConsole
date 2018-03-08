@@ -1,0 +1,188 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8">
+    <title></title>
+    <script src="https://essc-dev.crm.dynamics.com/WebResources/ClientGlobalContext.js.aspx" type="text/javascript"></script>
+    <script src="https://essc-dev.crm.dynamics.com/WebResources/hpi_jquery_min" type="text/javascript"></script>
+
+    <style>
+        .enjoy-css {
+            display: block;
+            float: left;
+            padding: 2px 5px;
+            border: 1px solid #b7b7b7;
+            font: normal 12px/normal segoe ui;
+        }
+
+        .enjoy-css-text {
+            display: block;
+            float: left;
+            padding: 2px 5px;
+            border: 1px solid #b7b7b7;
+            font: normal 12px/normal segoe ui;
+            width: 600px;
+        }
+
+        .lookupImg {
+            display: block;
+            float: left;
+            padding-top: 2px;
+            border: 1px solid #b7b7b7;
+        }
+
+        .lookupAlignment {
+            text-align: left;
+            vertical-align: middle;
+        }
+
+        .btnbutton {
+            height: 24px;
+            font-family: Segoe UI,Tahoma,Arial;
+            border: 1px solid #C6C6C6;
+            background-image: none;
+            margin-top: 10px;
+            width: 80px;
+            min-width: 80px;
+            white-space: nowrap;
+            line-height: 20px;
+            cursor: pointer;
+            background-color: white;
+            padding: 0 5px 0 5px;
+            text-align: center;
+            font-size: 11px;
+        }
+
+            .btnbutton:hover {
+                color: black;
+                background-color: #B1D6F0;
+            }
+
+        span {
+            font: normal 16px/normal segoe ui;
+        }
+
+        td {
+            font: normal 14px/normal segoe ui;
+            width: 200px;
+        }
+    </style>
+    <script type="text/javascript">
+        function TranslateSingle()
+        {
+            var actionName = "wiptrans_TranslateSingle";
+            var actionParameters =
+                {
+                    "TranslateFromLanguage": $("#txt_languageFrom_id").val(),
+                    "TranslateToLanguage": $("#txt_languageTo_id").val(),
+                    "TextToTranslate": $('#txt_text_to_translate').val()
+                };
+
+            var translatedValues = callTranslator(actionName, actionParameters);
+
+        };
+        callTranslator = function (actionName, actionParameter) {
+            var req = new XMLHttpRequest();
+            // This URI need to be fetched from the Provider Entity
+            req.open("POST", Xrm.Page.context.getClientUrl() + "/api/data/v8.0/essc_SendCustomerNotifications", false);
+            req.setRequestHeader("OData-MaxVersion", "4.0");
+            req.setRequestHeader("OData-Version", "4.0");
+            req.setRequestHeader("Accept", "application/json");
+            req.setRequestHeader("Content-Type", "application/json; charset=utf-8");
+            req.setRequestHeader("Prefer", "odata.include-annotations=\"OData.Community.Display.V1.FormattedValue\"");
+            req.onreadystatechange = function () {
+                if (this.readyState === 4) {
+                    req.onreadystatechange = null;
+                    if (this.status === 200 || this.status == 204) {
+                        HP.ESSC.CustomerNotification.Ribbon._displayNotification("Successfully Sent to Customer Notification", HP.ESSC.CustomerNotification.Ribbon.notificationType.information);
+                    }
+                    else {
+                        HP.ESSC.CustomerNotification.Ribbon._displayNotification("Unsuccessfull while sent to Customer Notification", HP.ESSC.CustomerNotification.Ribbon.notificationType.error);
+                    }
+                }
+            };
+            req.send(JSON.stringify(parameters));
+        };
+
+    </script>
+   
+</head>
+<body style="word-wrap: break-word;" onfocusout="parent.setEmailRange();">
+    <br>Please provide value to be translated to different languages<br><br>
+    <hr />
+    <table>
+        <tbody>
+
+            <tr>
+                <td>
+                    Translate From Language:
+                </td>
+                <td>
+                    <input type="text" id="txt_languageFrom_id" class="enjoy-css">
+                </td>
+            </tr>
+
+            <tr>
+                <td>
+                    Translate To Language:
+                </td>
+                <td>
+                    <input type="text" id="txt_languageTo_id" class="enjoy-css">
+                </td>
+            </tr>
+            <tr></tr>
+            <tr>
+                <td>
+                    Text to be Translated :
+                </td>
+                <td>
+                    <input type="text" id="txt_text_to_translate" class="enjoy-css-text">
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Translation Snippet Name :
+                </td>
+                <td>
+                    <input type="text" id="txt_translation_snippetName" class="enjoy-css-text">
+                </td>
+            </tr>
+
+            <tr>
+                <td>
+                    Translator Provide:
+                </td>
+                <td>
+                    <ul>
+                        <li> Azure </li>
+                        <li> Google </li>
+                        <li> Amazon </li>
+                        <li> Custom 1 </li>
+                    </ul>
+                </td>
+            </tr>
+        </tbody>
+        <tfoot>
+            <tr>
+                <td>
+                    <input class="btnbutton" id="clone" type="button" value="Translate" onclick="TranslateSingle()">
+                </td>
+            </tr>
+        </tfoot>
+    </table>
+    <table>
+        <tr>
+            <td>
+                Translated Value:
+            </td>
+            <td>
+                <label id="lbl_translatedValue">{Translated Value to appear here!}</label>
+            </td>
+        </tr>
+    </table>
+    <br>
+
+
+</body>
+</html>
