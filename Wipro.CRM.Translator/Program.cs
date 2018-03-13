@@ -26,8 +26,10 @@ namespace Wipro.CRM.Translator
             #region Google Translator
             string apiKey = "AIzaSyBmdxU-y-3KenW-rdRqNEF8w--0txQtv1Q";
             string baseUri = "https://translation.googleapis.com/language/translate/v2?key=" + apiKey;
-            string requestBody = string.Empty;
-            #endregion
+            //string requestBody = string.Empty;
+            #endregion     
+
+            
 
             string value = string.Empty;
             JObject requestBody = null;
@@ -55,16 +57,16 @@ namespace Wipro.CRM.Translator
                         case 2: // HttpPost
                             {
 
-                                //string ParameterFromLanguageKey = "source",
-                                //ParameterToLanguageKey = "target",
-                                //ParameterTextKey = "q";
+                                string ParameterFromLanguageKey = "source",
+                                ParameterToLanguageKey = "target",
+                                ParameterTextKey = "q";
                                 request.Method = HttpMethod.Post;
                                 request.RequestUri = new Uri(baseUri);
 
                                 requestBody = new JObject();
-                                requestBody.Add("q", text);
-                                requestBody.Add("source", from);
-                                requestBody.Add("target", to);
+                                requestBody.Add(ParameterTextKey, text);
+                                requestBody.Add(ParameterFromLanguageKey, from);
+                                requestBody.Add(ParameterToLanguageKey, to);
 
                                 request.Content = new StringContent(requestBody.ToString(), Encoding.UTF8, "application/json");
                                 request.Headers.TryAddWithoutValidation("Content-Type", "application/json");
@@ -93,15 +95,3 @@ namespace Wipro.CRM.Translator
         }
     }
 }
-
-//string translatedText = "";
-
-//HttpWebRequest httpWebRequest = (HttpWebRequest)WebRequest.Create(uri);
-//httpWebRequest.Headers.Add("Ocp-Apim-Subscription-Key", Subscriptionkey);// From Mapper
-
-//using (WebResponse response = httpWebRequest.GetResponse())
-//using (Stream stream = response.GetResponseStream())
-//{
-//    DataContractSerializer dcs = new DataContractSerializer(Type.GetType("System.String"));
-//    translatedText = (string)dcs.ReadObject(stream);
-//}
